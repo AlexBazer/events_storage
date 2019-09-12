@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Events storage app
+
+  '
+Globals:
+  Function:
+    Timeout: 10
+Parameters:
+  MongoDBConnectionString:
+    Default: /EventsStorage/MongoDBConnectionString
+    Type: AWS::SSM::Parameter::Value<String>
+Resources:
+  ProcessFunction:
+    Properties:
+      CodeUri: s3://eventsstorage/d8abdef88d975257a345ed34d9f190c6
+      Environment:
+        Variables:
+          MongoDBConnectionString:
+            Ref: MongoDBConnectionString
+      Events:
+        ProcessTrigger:
+          Properties:
+            Queue:
+              Fn::GetAtt:
+              - ProcessQueue
+              - Arn
+          Type: SQS
+      Handler: app.process
+      Runtime: python3.6
+    Type: AWS::Serverless::Function
+  ProcessQueue:
+    Type: AWS::SQS::Queue
+Transform: AWS::Serverless-2016-10-31
